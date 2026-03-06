@@ -1,0 +1,44 @@
+{
+  "pluginAlias": "BambuLabs",
+  "pluginType": "platform",
+  "singular": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "Bambu Labs"
+      },
+      "printers": {
+        "title": "Printers",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Printer Name",
+              "type": "string",
+              "required": true
+            },
+            "ip": {
+              "title": "IP Address",
+              "type": "string",
+              "required": true
+            },
+            "serial": {
+              "title": "Serial Number",
+              "type": "string",
+              "required": true
+            },
+            "accessCode": {
+              "title": "Access Code",
+              "type": "string",
+              "required": true
+            }
+          }
+        }
+      }
+    }
+  }
+}

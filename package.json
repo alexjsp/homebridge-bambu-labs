@@ -1,0 +1,33 @@
+{
+  "displayName": "Homebridge Bambu Labs",
+  "name": "homebridge-bambu-labs",
+  "version": "1.0.0",
+  "description": "Homebridge plugin for Bambu Labs 3D printers - printing sensor and chamber light control",
+  "license": "ISC",
+  "type": "module",
+  "main": "dist/index.js",
+  "engines": {
+    "node": "^20.18.0 || ^22.10.0",
+    "homebridge": "^1.8.0 || ^2.0.0-beta.0"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "bambu",
+    "bambu-labs",
+    "3d-printer"
+  ],
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "watch": "tsc -w",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "mqtt": "^5.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "homebridge": "^2.0.0-beta.0",
+    "rimraf": "^6.0.0",
+    "typescript": "^5.7.0"
+  }
+}
