@@ -35,6 +35,21 @@
               "title": "Access Code",
               "type": "string",
               "required": true
+            },
+            "enableNozzleTemperature": {
+              "title": "Enable Nozzle Temperature Sensor",
+              "type": "boolean",
+              "default": true
+            },
+            "enableBedTemperature": {
+              "title": "Enable Bed Temperature Sensor",
+              "type": "boolean",
+              "default": true
+            },
+            "enableChamberTemperature": {
+              "title": "Enable Chamber Temperature Sensor",
+              "type": "boolean",
+              "default": true
             }
           }
         }

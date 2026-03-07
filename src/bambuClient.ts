@@ -5,6 +5,9 @@ import type { Logging } from 'homebridge';
 export interface PrinterStatus {
   gcodeState: string;
   lightOn: boolean;
+  nozzleTemperature: number;
+  bedTemperature: number;
+  chamberTemperature: number;
 }
 
 export interface BambuClientConfig {
@@ -15,7 +18,13 @@ export interface BambuClientConfig {
 
 export class BambuClient extends EventEmitter {
   private client: MqttClient | null = null;
-  private status: PrinterStatus = { gcodeState: 'IDLE', lightOn: false };
+  private status: PrinterStatus = {
+    gcodeState: 'IDLE',
+    lightOn: false,
+    nozzleTemperature: 0,
+    bedTemperature: 0,
+    chamberTemperature: 0,
+  };
   private sequenceId = 0;
 
   constructor(
@@ -120,6 +129,27 @@ export class BambuClient extends EventEmitter {
       const newState = print.gcode_state;
       if (newState !== this.status.gcodeState) {
         this.status.gcodeState = newState;
+        changed = true;
+      }
+    }
+
+    if (typeof print.nozzle_temper === 'number') {
+      if (print.nozzle_temper !== this.status.nozzleTemperature) {
+        this.status.nozzleTemperature = print.nozzle_temper;
+        changed = true;
+      }
+    }
+
+    if (typeof print.bed_temper === 'number') {
+      if (print.bed_temper !== this.status.bedTemperature) {
+        this.status.bedTemperature = print.bed_temper;
+        changed = true;
+      }
+    }
+
+    if (typeof print.chamber_temper === 'number') {
+      if (print.chamber_temper !== this.status.chamberTemperature) {
+        this.status.chamberTemperature = print.chamber_temper;
         changed = true;
       }
     }

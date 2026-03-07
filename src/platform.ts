@@ -12,11 +12,14 @@ import { BambuClient } from './bambuClient.js';
 import { PrinterAccessory } from './printerAccessory.js';
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
 
-interface PrinterConfig {
+export interface PrinterConfig {
   name: string;
   ip: string;
   serial: string;
   accessCode: string;
+  enableNozzleTemperature?: boolean;
+  enableBedTemperature?: boolean;
+  enableChamberTemperature?: boolean;
 }
 
 export class BambuLabsPlatform implements DynamicPlatformPlugin {
@@ -72,12 +75,14 @@ export class BambuLabsPlatform implements DynamicPlatformPlugin {
         this.log.info('Restoring accessory from cache: %s', printer.name);
         existingAccessory.context.bambuClient = bambuClient;
         existingAccessory.context.serial = printer.serial;
+        existingAccessory.context.printerConfig = printer;
         new PrinterAccessory(this, existingAccessory);
       } else {
         this.log.info('Adding new accessory: %s', printer.name);
         const accessory = new this.api.platformAccessory(printer.name, uuid);
         accessory.context.bambuClient = bambuClient;
         accessory.context.serial = printer.serial;
+        accessory.context.printerConfig = printer;
         new PrinterAccessory(this, accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }
