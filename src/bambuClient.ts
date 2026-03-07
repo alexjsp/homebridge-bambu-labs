@@ -153,11 +153,16 @@ export class BambuClient extends EventEmitter {
       }
     }
 
-    if (typeof print.chamber_temper === 'number') {
-      if (print.chamber_temper !== this.status.chamberTemperature) {
-        this.status.chamberTemperature = print.chamber_temper;
-        changed = true;
-      }
+    // New firmware reports chamber temp at device.ctc.info.temp, legacy uses chamber_temper
+    const device = print.device as Record<string, unknown> | undefined;
+    const ctcTemp = (device?.ctc as Record<string, unknown>)?.info as Record<string, unknown> | undefined;
+    const newChamberTemp = typeof ctcTemp?.temp === 'number'
+      ? (ctcTemp.temp & 0xFFFF)
+      : (typeof print.chamber_temper === 'number' ? Math.round(print.chamber_temper) : undefined);
+
+    if (newChamberTemp !== undefined && newChamberTemp !== this.status.chamberTemperature) {
+      this.status.chamberTemperature = newChamberTemp;
+      changed = true;
     }
 
     if (Array.isArray(print.lights_report)) {
