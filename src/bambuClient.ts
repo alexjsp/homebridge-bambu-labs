@@ -11,9 +11,15 @@ export interface PrinterStatus {
 }
 
 export interface BambuClientConfig {
-  ip: string;
   serial: string;
-  accessCode: string;
+  /** LAN mode: printer IP. Cloud mode: cloud MQTT host. */
+  host: string;
+  /** LAN mode: 'bblp'. Cloud mode: 'u_<id>'. */
+  username: string;
+  /** LAN mode: access code. Cloud mode: auth token. */
+  password: string;
+  /** Whether to use standard TLS (cloud) or skip cert verification (LAN). */
+  useCloudTls: boolean;
 }
 
 export class BambuClient extends EventEmitter {
@@ -39,13 +45,13 @@ export class BambuClient extends EventEmitter {
   }
 
   connect(): void {
-    const url = `mqtts://${this.config.ip}:8883`;
-    this.log.info('Connecting to printer at %s', this.config.ip);
+    const url = `mqtts://${this.config.host}:8883`;
+    this.log.info('Connecting to %s for printer %s', this.config.host, this.config.serial);
 
     this.client = mqtt.connect(url, {
-      username: 'bblp',
-      password: this.config.accessCode,
-      rejectUnauthorized: false,
+      username: this.config.username,
+      password: this.config.password,
+      rejectUnauthorized: this.config.useCloudTls,
       reconnectPeriod: 5000,
     });
 

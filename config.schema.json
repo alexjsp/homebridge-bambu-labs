@@ -10,8 +10,44 @@
         "type": "string",
         "default": "Bambu Labs"
       },
+      "cloudMode": {
+        "title": "Cloud Mode",
+        "description": "Connect to printers via Bambu Labs cloud instead of LAN",
+        "type": "boolean",
+        "default": false
+      },
+      "cloudEmail": {
+        "title": "Bambu Labs Email",
+        "description": "Your Bambu Labs account email (cloud mode only)",
+        "type": "string",
+        "condition": { "functionBody": "return model.cloudMode === true;" }
+      },
+      "cloudPassword": {
+        "title": "Bambu Labs Password",
+        "description": "Your Bambu Labs account password (cloud mode only)",
+        "type": "string",
+        "condition": { "functionBody": "return model.cloudMode === true;" }
+      },
+      "cloudToken": {
+        "title": "Auth Token",
+        "description": "Bambu Labs auth token (alternative to email/password, e.g. if 2FA is enabled)",
+        "type": "string",
+        "condition": { "functionBody": "return model.cloudMode === true;" }
+      },
+      "cloudRegion": {
+        "title": "Cloud Region",
+        "description": "Bambu Labs cloud region",
+        "type": "string",
+        "default": "global",
+        "oneOf": [
+          { "title": "Global", "enum": ["global"] },
+          { "title": "China", "enum": ["china"] }
+        ],
+        "condition": { "functionBody": "return model.cloudMode === true;" }
+      },
       "printers": {
         "title": "Printers",
+        "description": "In cloud mode without printers listed, all printers on your account are auto-discovered",
         "type": "array",
         "items": {
           "type": "object",
@@ -24,7 +60,8 @@
             "ip": {
               "title": "IP Address",
               "type": "string",
-              "required": true
+              "description": "Required for LAN mode",
+              "condition": { "functionBody": "return !model.cloudMode;" }
             },
             "serial": {
               "title": "Serial Number",
@@ -34,7 +71,8 @@
             "accessCode": {
               "title": "Access Code",
               "type": "string",
-              "required": true
+              "description": "Required for LAN mode",
+              "condition": { "functionBody": "return !model.cloudMode;" }
             },
             "enableNozzleTemperature": {
               "title": "Enable Nozzle Temperature Sensor",
