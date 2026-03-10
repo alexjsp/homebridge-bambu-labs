@@ -21,6 +21,10 @@ export interface PrinterConfig {
   enableNozzleTemperature?: boolean;
   enableBedTemperature?: boolean;
   enableChamberTemperature?: boolean;
+  enableCamera?: boolean;
+  /** 'rtsp' for X1/X1C/X1E/P2S/H2 series, 'jpeg' for A1/A1 Mini/P1P/P1S */
+  cameraType?: 'rtsp' | 'jpeg';
+  ffmpegPath?: string;
 }
 
 export class BambuLabsPlatform implements DynamicPlatformPlugin {

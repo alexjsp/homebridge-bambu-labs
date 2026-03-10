@@ -1,7 +1,9 @@
-import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge';
+import type { CameraController, CameraControllerOptions, CharacteristicValue, PlatformAccessory, Service } from 'homebridge';
 import type { BambuLabsPlatform } from './platform.js';
 import type { PrinterConfig } from './platform.js';
 import type { BambuClient, PrinterStatus } from './bambuClient.js';
+import { BambuCameraStreamingDelegate, type BambuCameraConfig } from './bambuCameraStream.js';
+import { BambuJpegStream } from './bambuJpegStream.js';
 
 const PRINTING_STATES = new Set(['RUNNING', 'PAUSE', 'PREPARE']);
 
@@ -13,6 +15,7 @@ export class PrinterAccessory {
   private nozzleTempService?: Service;
   private bedTempService?: Service;
   private chamberTempService?: Service;
+  private jpegStream?: BambuJpegStream;
 
   constructor(
     private readonly platform: BambuLabsPlatform,
@@ -57,6 +60,9 @@ export class PrinterAccessory {
     // Temperature sensors (enabled by default, can be disabled via config)
     this.setupTemperatureSensors();
 
+    // Camera (opt-in, requires ffmpeg and LAN access)
+    this.setupCamera();
+
     // Listen for status updates from the MQTT client
     this.bambuClient.on('status', (status: PrinterStatus) => {
       this.updateCharacteristics(status);
@@ -88,6 +94,60 @@ export class PrinterAccessory {
       'Chamber Temperature',
       'chamber-temp',
     );
+  }
+
+  private setupCamera(): void {
+    if (!this.printerConfig.enableCamera) {
+      return;
+    }
+
+    if (!this.printerConfig.ip) {
+      this.platform.log.warn(
+        'Camera enabled for %s but no IP address configured. Camera requires LAN access.',
+        this.printerConfig.name,
+      );
+      return;
+    }
+
+    if (!this.printerConfig.accessCode) {
+      this.platform.log.warn(
+        'Camera enabled for %s but no access code configured. Camera requires the LAN access code.',
+        this.printerConfig.name,
+      );
+      return;
+    }
+
+    const cameraType = this.printerConfig.cameraType ?? 'rtsp';
+    this.platform.log.info('Setting up %s camera for %s', cameraType.toUpperCase(), this.printerConfig.name);
+
+    const cameraConfig: BambuCameraConfig = {
+      ip: this.printerConfig.ip,
+      accessCode: this.printerConfig.accessCode,
+      cameraType,
+      ffmpegPath: this.printerConfig.ffmpegPath,
+    };
+
+    const delegate = new BambuCameraStreamingDelegate(cameraConfig, this.platform.log);
+
+    // For JPEG stream cameras (A1/P1 series), start the JPEG stream client
+    if (cameraType === 'jpeg') {
+      this.jpegStream = new BambuJpegStream(
+        this.printerConfig.ip,
+        this.printerConfig.accessCode,
+        this.platform.log,
+      );
+      delegate.setJpegStream(this.jpegStream);
+      this.jpegStream.connect();
+    }
+
+    const controllerOptions: CameraControllerOptions = {
+      cameraStreamCount: 2,
+      delegate,
+      streamingOptions: BambuCameraStreamingDelegate.createStreamingOptions(),
+    };
+
+    const controller: CameraController = new this.platform.api.hap.CameraController(controllerOptions);
+    this.accessory.configureController(controller);
   }
 
   private manageTemperatureService(
