@@ -1,7 +1,7 @@
 {
   "displayName": "Homebridge Bambu Labs",
   "name": "homebridge-bambu-labs",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Homebridge plugin for Bambu Labs 3D printers - printing sensor and chamber light control",
   "license": "ISC",
   "type": "module",
