@@ -20,8 +20,9 @@ export class PrinterAccessory {
   constructor(
     private readonly platform: BambuLabsPlatform,
     private readonly accessory: PlatformAccessory,
+    bambuClient: BambuClient,
   ) {
-    this.bambuClient = accessory.context.bambuClient as BambuClient;
+    this.bambuClient = bambuClient;
     this.printerConfig = accessory.context.printerConfig as PrinterConfig;
 
     // Accessory information
