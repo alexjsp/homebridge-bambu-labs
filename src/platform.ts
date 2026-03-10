@@ -179,17 +179,15 @@ export class BambuLabsPlatform implements DynamicPlatformPlugin {
 
     if (existingAccessory) {
       this.log.info('Restoring accessory from cache: %s', printer.name);
-      existingAccessory.context.bambuClient = bambuClient;
       existingAccessory.context.serial = printer.serial;
       existingAccessory.context.printerConfig = printer;
-      new PrinterAccessory(this, existingAccessory);
+      new PrinterAccessory(this, existingAccessory, bambuClient);
     } else {
       this.log.info('Adding new accessory: %s', printer.name);
       const accessory = new this.api.platformAccessory(printer.name, uuid);
-      accessory.context.bambuClient = bambuClient;
       accessory.context.serial = printer.serial;
       accessory.context.printerConfig = printer;
-      new PrinterAccessory(this, accessory);
+      new PrinterAccessory(this, accessory, bambuClient);
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
   }
