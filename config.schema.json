@@ -60,8 +60,7 @@
             "ip": {
               "title": "IP Address",
               "type": "string",
-              "description": "Required for LAN mode",
-              "condition": { "functionBody": "return !model.cloudMode;" }
+              "description": "Required for LAN mode. Also needed in cloud mode for camera streaming."
             },
             "serial": {
               "title": "Serial Number",
@@ -71,8 +70,7 @@
             "accessCode": {
               "title": "Access Code",
               "type": "string",
-              "description": "Required for LAN mode",
-              "condition": { "functionBody": "return !model.cloudMode;" }
+              "description": "Required for LAN mode. Also needed in cloud mode for camera streaming."
             },
             "enableNozzleTemperature": {
               "title": "Enable Nozzle Temperature Sensor",
@@ -88,6 +86,29 @@
               "title": "Enable Chamber Temperature Sensor",
               "type": "boolean",
               "default": true
+            },
+            "enableCamera": {
+              "title": "Enable Camera",
+              "description": "Stream the printer camera to HomeKit. Requires ffmpeg installed on the system and LAN access to the printer.",
+              "type": "boolean",
+              "default": false
+            },
+            "cameraType": {
+              "title": "Camera Type",
+              "description": "RTSP for X1/X1C/X1E/P2S/H2 series. JPEG for A1/A1 Mini/P1P/P1S.",
+              "type": "string",
+              "default": "rtsp",
+              "oneOf": [
+                { "title": "RTSP (X1/X1C/X1E/P2S/H2 series)", "enum": ["rtsp"] },
+                { "title": "JPEG Stream (A1/A1 Mini/P1P/P1S)", "enum": ["jpeg"] }
+              ],
+              "condition": { "functionBody": "try { return arrayItem.enableCamera === true; } catch(e) { return false; }" }
+            },
+            "ffmpegPath": {
+              "title": "FFmpeg Path",
+              "description": "Custom path to ffmpeg binary (defaults to 'ffmpeg' on PATH)",
+              "type": "string",
+              "condition": { "functionBody": "try { return arrayItem.enableCamera === true; } catch(e) { return false; }" }
             }
           }
         }

@@ -9,10 +9,11 @@ A [Homebridge](https://homebridge.io) plugin that exposes Bambu Labs 3D printers
 - **Nozzle temperature sensor** — reports the current hotend temperature
 - **Bed temperature sensor** — reports the current build plate temperature
 - **Chamber temperature sensor** — reports the current enclosure temperature
+- **Camera streaming** — view the printer camera feed in HomeKit (RTSP for X1/H2 series, JPEG for A1/P1 series)
 - **LAN and Cloud modes** — connect directly over your local network, or via Bambu Labs cloud for remote access
 - **Auto-discovery** — in cloud mode, printers are automatically discovered from your account
 
-All three temperature sensors can be individually disabled per-printer in the config.
+Temperature sensors can be individually disabled per-printer in the config.
 
 ## Prerequisites
 
@@ -28,6 +29,10 @@ All three temperature sensors can be individually disabled per-printer in the co
 **For Cloud mode:**
 - A Bambu Labs account with your printer(s) registered
 - Your account email/password, or an auth token
+
+**For camera streaming:**
+- [ffmpeg](https://ffmpeg.org/) installed on the Homebridge host
+- The printer's **IP address** and **LAN Access Code** (even in cloud mode, camera streams are accessed directly over LAN)
 
 ## Installation
 
@@ -145,12 +150,35 @@ You can optionally list specific printers (by serial number) in cloud mode to co
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
 | `name` | Yes | — | Display name for the printer in HomeKit |
-| `ip` | LAN | — | Printer's local IP address |
+| `ip` | LAN / Camera | — | Printer's local IP address |
 | `serial` | Yes | — | Printer serial number |
-| `accessCode` | LAN | — | 8-character LAN Access Code |
+| `accessCode` | LAN / Camera | — | 8-character LAN Access Code |
 | `enableNozzleTemperature` | No | `true` | Show nozzle temperature sensor |
 | `enableBedTemperature` | No | `true` | Show bed temperature sensor |
 | `enableChamberTemperature` | No | `true` | Show chamber temperature sensor |
+| `enableCamera` | No | `false` | Enable HomeKit camera streaming |
+| `cameraType` | No | `rtsp` | `rtsp` (X1/X1C/X1E/P2S/H2 series) or `jpeg` (A1/A1 Mini/P1P/P1S) |
+| `ffmpegPath` | No | `ffmpeg` | Custom path to ffmpeg binary |
+
+### Camera setup
+
+To enable the camera, set `enableCamera` to `true` and choose the correct `cameraType` for your printer:
+
+- **RTSP** (`rtsp`): X1, X1C, X1E, P2S, H2C, H2D, H2D Pro, H2S — these printers stream via RTSP on port 322
+- **JPEG** (`jpeg`): A1, A1 Mini, P1P, P1S — these printers use a proprietary JPEG stream on port 6000
+
+Camera streaming always requires the printer's **local IP address** and **access code**, even in cloud mode. The video stream is accessed directly over your LAN — it does not go through the Bambu cloud.
+
+```json
+{
+  "name": "My X1C",
+  "ip": "192.168.1.100",
+  "serial": "YOUR_SERIAL",
+  "accessCode": "YOUR_CODE",
+  "enableCamera": true,
+  "cameraType": "rtsp"
+}
+```
 
 ## Development
 
