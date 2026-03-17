@@ -130,8 +130,8 @@ export class PrinterAccessory {
 
     const delegate = new BambuCameraStreamingDelegate(cameraConfig, this.platform.log);
 
-    // For JPEG stream cameras (A1/P1 series), start the JPEG stream client
     if (cameraType === 'jpeg') {
+      // For JPEG stream cameras (A1/P1 series), start the JPEG stream client
       this.jpegStream = new BambuJpegStream(
         this.printerConfig.ip,
         this.printerConfig.accessCode,
@@ -139,6 +139,12 @@ export class PrinterAccessory {
       );
       delegate.setJpegStream(this.jpegStream);
       this.jpegStream.connect();
+    } else {
+      // For RTSP cameras, the printer must be told to start the live stream via MQTT
+      this.bambuClient.on('connected', () => {
+        this.platform.log.info('Starting RTSP liveview for %s', this.printerConfig.name);
+        this.bambuClient.startLiveview();
+      });
     }
 
     const controllerOptions: CameraControllerOptions = {
