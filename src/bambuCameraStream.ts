@@ -272,6 +272,10 @@ export class BambuCameraStreamingDelegate implements CameraStreamingDelegate {
     if (this.config.cameraType === 'rtsp') {
       return [
         '-rtsp_transport', 'tcp',
+        '-tls_verify', '0',
+        '-analyzeduration', '1000000',
+        '-probesize', '500000',
+        '-stimeout', '5000000',
         '-i', this.getRtspUrl(),
       ];
     }
@@ -283,6 +287,10 @@ export class BambuCameraStreamingDelegate implements CameraStreamingDelegate {
     if (this.config.cameraType === 'rtsp') {
       return [
         '-rtsp_transport', 'tcp',
+        '-tls_verify', '0',
+        '-analyzeduration', '1000000',
+        '-probesize', '500000',
+        '-stimeout', '5000000',
         '-i', this.getRtspUrl(),
       ];
     }
