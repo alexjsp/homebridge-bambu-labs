@@ -64,6 +64,7 @@ export class BambuClient extends EventEmitter {
           return;
         }
         this.requestFullStatus();
+        this.emit('connected');
       });
     });
 
@@ -95,6 +96,24 @@ export class BambuClient extends EventEmitter {
       pushing: {
         sequence_id: String(this.sequenceId++),
         command: 'pushall',
+      },
+    });
+  }
+
+  startLiveview(): void {
+    this.publish({
+      camera: {
+        sequence_id: String(this.sequenceId++),
+        command: 'start',
+      },
+    });
+  }
+
+  stopLiveview(): void {
+    this.publish({
+      camera: {
+        sequence_id: String(this.sequenceId++),
+        command: 'stop',
       },
     });
   }
