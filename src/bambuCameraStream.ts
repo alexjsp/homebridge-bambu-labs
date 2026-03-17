@@ -101,15 +101,15 @@ export class BambuCameraStreamingDelegate implements CameraStreamingDelegate {
     const chunks: Buffer[] = [];
 
     ffmpeg.stdout.on('data', (data: Buffer) => chunks.push(data));
-    ffmpeg.stderr.on('data', (data: Buffer) => {
-      this.log.debug('Snapshot ffmpeg stderr: %s', data.toString().trim());
-    });
+    const stderrChunks: Buffer[] = [];
+    ffmpeg.stderr.on('data', (data: Buffer) => stderrChunks.push(data));
 
     ffmpeg.on('close', (code) => {
       if (code === 0 && chunks.length > 0) {
         callback(undefined, Buffer.concat(chunks));
       } else {
-        this.log.warn('Snapshot ffmpeg exited with code %d', code);
+        const stderr = Buffer.concat(stderrChunks).toString().trim();
+        this.log.warn('Snapshot ffmpeg exited with code %d: %s', code, stderr);
         callback(new Error(`ffmpeg exited with code ${code}`));
       }
     });
@@ -272,10 +272,8 @@ export class BambuCameraStreamingDelegate implements CameraStreamingDelegate {
     if (this.config.cameraType === 'rtsp') {
       return [
         '-rtsp_transport', 'tcp',
-        '-tls_verify', '0',
         '-analyzeduration', '1000000',
         '-probesize', '500000',
-        '-stimeout', '5000000',
         '-i', this.getRtspUrl(),
       ];
     }
@@ -287,10 +285,8 @@ export class BambuCameraStreamingDelegate implements CameraStreamingDelegate {
     if (this.config.cameraType === 'rtsp') {
       return [
         '-rtsp_transport', 'tcp',
-        '-tls_verify', '0',
         '-analyzeduration', '1000000',
         '-probesize', '500000',
-        '-stimeout', '5000000',
         '-i', this.getRtspUrl(),
       ];
     }
