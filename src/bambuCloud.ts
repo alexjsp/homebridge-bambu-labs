@@ -60,7 +60,7 @@ export class BambuCloud {
     const data = await res.json() as Record<string, unknown>;
 
     if (typeof data.accessToken === 'string') {
-      return this.credentialsFromToken(data.accessToken);
+      return await this.credentialsFromToken(data.accessToken);
     }
 
     if (data.loginType === 'verifyCode') {
@@ -83,7 +83,7 @@ export class BambuCloud {
   }
 
   async loginWithToken(token: string): Promise<CloudCredentials> {
-    return this.credentialsFromToken(token);
+    return await this.credentialsFromToken(token);
   }
 
   async getDevices(token: string): Promise<CloudDevice[]> {
@@ -115,12 +115,12 @@ export class BambuCloud {
     }));
   }
 
-  private credentialsFromToken(token: string): CloudCredentials {
-    const username = this.extractUsername(token);
+  private async credentialsFromToken(token: string): Promise<CloudCredentials> {
+    const username = this.usernameFromJwt(token) ?? await this.fetchUsername(token);
     return { username, token };
   }
 
-  private extractUsername(token: string): string {
+  private usernameFromJwt(token: string): string | null {
     try {
       const parts = token.split('.');
       if (parts.length === 3) {
@@ -132,12 +132,36 @@ export class BambuCloud {
         }
       }
     } catch {
-      // Not a valid JWT, fall through
+      // Not a valid JWT
     }
-    throw new Error(
-      'Could not extract username from auth token. '
-      + 'Ensure the token is a valid Bambu Labs JWT.',
-    );
+    return null;
+  }
+
+  private async fetchUsername(token: string): Promise<string> {
+    const res = await fetch(`${this.apiBase}/v1/user-service/my/profile`, {
+      method: 'GET',
+      headers: {
+        ...DEFAULT_HEADERS,
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(
+        `Could not resolve username from auth token: /my/profile returned status ${res.status}. `
+        + 'Check that the token is valid and not expired.',
+      );
+    }
+
+    const data = await res.json() as Record<string, unknown>;
+    const uid = data.uid;
+    if (typeof uid !== 'number' && typeof uid !== 'string') {
+      throw new Error(
+        `Could not resolve username from auth token: /my/profile response missing 'uid' field.`,
+      );
+    }
+
+    return `u_${uid}`;
   }
 
   static mqttHost(region: CloudRegion): string {
